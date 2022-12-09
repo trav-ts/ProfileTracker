@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO;
 
 namespace Unfollowed
 {
@@ -131,11 +132,13 @@ namespace Unfollowed
         /// This will be the users that this profile has unfollwed.
         /// 
         /// </summary>
-        /// <returns>List of users this profile is no longer following</returns>
-        /// <exception cref="NotImplementedException"></exception>
+        /// <returns>
+        /// List of users this profile is no longer following.
+        /// Empty list if newFollowers is null.
+        /// </returns>
         public string[] GetUnfollowed()
         {
-            throw new NotImplementedException();
+            return CompareLists(CurrFollowing, NewFollowing);
         }
 
         /// <summary>
@@ -147,11 +150,13 @@ namespace Unfollowed
         /// assumed that the owner of this profile will be aware of that.
         /// 
         /// </summary>
-        /// <returns>List of usernames who no longer follow this profile</returns>
-        /// <exception cref="NotImplementedException"></exception>
+        /// <returns>
+        /// List of usernames who no longer follow this profile
+        /// Empty list if newFollowers is null.
+        /// </returns>
         public string[] GetUnfollowedBy()
         {
-            throw new NotImplementedException();
+            return CompareLists(CurrFollowers, NewFollowers);
         }
 
         /// <summary>
@@ -159,20 +164,18 @@ namespace Unfollowed
         /// 
         /// </summary>
         /// <returns>List of usernames not following back</returns>
-        /// <exception cref="NotImplementedException"></exception>
         public string[] GetNotFollowingBack()
         {
-            throw new NotImplementedException();
+            return CompareLists(CurrFollowers, CurrFollowing);
         }
 
         /// <summary>
         /// Get the list of users that are not following this profile back.
         /// </summary>
         /// <returns>List of usernames not following this profile.</returns>
-        /// <exception cref="NotImplementedException"></exception>
         public string[] GetNotFollowedBack()
         {
-            throw new NotImplementedException();
+            return CompareLists(CurrFollowing, CurrFollowers);
         }
 
         /// <summary>
@@ -181,10 +184,9 @@ namespace Unfollowed
         /// 
         /// </summary>
         /// <returns>List of usernames that are new followers</returns>
-        /// <exception cref="NotImplementedException"></exception>
         public string[] GetNewFollowers()
         {
-            throw new NotImplementedException();
+            return CompareLists(NewFollowers, CurrFollowers);
         }
 
         /// <summary>
@@ -196,7 +198,7 @@ namespace Unfollowed
         /// <exception cref="NotImplementedException"></exception>
         public string[] GetNewFollowing()
         {
-            throw new NotImplementedException();
+            return CompareLists(NewFollowers, CurrFollowers);
         }
 
         /// <summary>
@@ -210,6 +212,21 @@ namespace Unfollowed
         public bool Update(string followersPath, string followingPath)
         {
             throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Gives the strings that exist in the first array but no in the second.
+        /// </summary>
+        /// <param name="first"></param>
+        /// <param name="second"></param>
+        /// <returns></returns>
+        private string[] CompareLists(string[] first, string[] second)
+        {
+            if (first == null || second == null)
+                return new string[0];
+            
+            IEnumerable<string> differenceQuery = first.Except(second);
+            return differenceQuery.ToArray();
         }
 
         /// <summary>
