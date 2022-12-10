@@ -259,7 +259,10 @@ namespace Unfollowed
         /// <returns>List of usernames not following back</returns>
         public string[] GetNotFollowingBack()
         {
-            return CompareLists(_currFollowers, _currFollowing);
+            if (_newFollowers == null)
+                return CompareLists(_currFollowers, _currFollowing);
+            else
+                return CompareLists(_newFollowers, _newFollowing);
         }
 
         /// <summary>
@@ -268,7 +271,10 @@ namespace Unfollowed
         /// <returns>List of usernames not following this profile.</returns>
         public string[] GetNotFollowedBack()
         {
-            return CompareLists(_currFollowing, _currFollowers);
+            if (_newFollowers == null)
+                return CompareLists(_currFollowing, _currFollowers);
+            else
+                return CompareLists(_newFollowing, _newFollowers);
         }
 
         /// <summary>
@@ -291,7 +297,7 @@ namespace Unfollowed
         /// <exception cref="NotImplementedException"></exception>
         public string[] GetNewFollowing()
         {
-            return CompareLists(_newFollowers, _currFollowers);
+            return CompareLists(_newFollowing, _currFollowing);
         }
 
         /// <summary>

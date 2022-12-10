@@ -23,6 +23,9 @@ namespace UnfollowedTests
             string[] WhoIdontFollow = testProfile.GetNotFollowingBack();
             string[] NewFollowers = testProfile.GetNewFollowers();
             string[] NewFollowing = testProfile.GetNewFollowing();
+            string[] whoIunfollowed = testProfile.GetUnfollowed();
+            testProfile.SaveProfile();
+            Array.Sort(whoDoesntFollowBack);
             Assert.IsTrue(true);
         }
     }
