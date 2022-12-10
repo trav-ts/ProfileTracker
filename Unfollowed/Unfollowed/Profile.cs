@@ -23,6 +23,7 @@ namespace Unfollowed
     /// </summary>
     public class Profile
     {
+        private const string ProfilePath = "C:\\Users\\travi\\source\\repos\\InstaFollowedMe\\InstaFollowedMe\\Profiles\\";
         private string name;
         private string userName;
         private int followers;
@@ -73,14 +74,15 @@ namespace Unfollowed
         private string[] _newFollowing;
 
         /// <summary>
+        /// Create profile based off previously saved userName
         /// 
+        /// Reads profile of userName from xml file.
         /// </summary>
         /// <param name="name"></param>
         /// <param name="userName"></param>
-        public Profile(string name, string userName)
+        public Profile(string userName)
         {
-            this.Name = name;
-            this.UserName = userName;
+            ReadProfile(ProfilePath + userName + ".xml");
         }
 
         /// <summary>
@@ -124,22 +126,32 @@ namespace Unfollowed
         public void SaveProfile()
         {
             XmlWriterSettings settings = new XmlWriterSettings { Indent = true };
-            XmlWriter xmlWriter = XmlWriter.Create("C:\\Users\\travi\\source\\repos\\InstaFollowedMe\\InstaFollowedMe\\Profiles\\" + UserName + ".xml", settings);
+            XmlWriter xmlWriter = XmlWriter.Create(ProfilePath + UserName + ".xml", settings);
+            // Start
             xmlWriter.WriteStartDocument();
             xmlWriter.WriteStartElement("Profile");
 
-            // Write name
+            // Name
             xmlWriter.WriteStartElement("Name");
             xmlWriter.WriteValue(Name);
             xmlWriter.WriteEndElement();
 
-            // Write username
+            // Username
             xmlWriter.WriteStartElement("UserName");
             xmlWriter.WriteValue(UserName);
             xmlWriter.WriteEndElement();
 
-            // Write followers
-            foreach(string follower in _newFollowers ?? _currFollowers)
+            // Followers count
+            xmlWriter.WriteStartElement("Followers");
+            xmlWriter.WriteValue(Followers);
+            xmlWriter.WriteEndElement();
+            // Following count
+            xmlWriter.WriteStartElement("FollowingCount");
+            xmlWriter.WriteValue(Following);
+            xmlWriter.WriteEndElement();
+
+            // Followers
+            foreach (string follower in _newFollowers ?? _currFollowers)
             {
                 if (follower == null)
                     break;
@@ -148,7 +160,7 @@ namespace Unfollowed
                 xmlWriter.WriteEndElement();
             }
 
-            // Write following
+            // Following
             foreach (string following in _newFollowing ?? _currFollowing)
             {
                 if (following == null)
@@ -157,6 +169,8 @@ namespace Unfollowed
                 xmlWriter.WriteValue(following);
                 xmlWriter.WriteEndElement();
             }
+            
+            // End
             xmlWriter.WriteEndElement();
             xmlWriter.WriteEndDocument();
             xmlWriter.Close();
@@ -170,9 +184,46 @@ namespace Unfollowed
         /// <param name="filePath">Location of desired profile</param>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        public bool ReadProfile(string filePath)
+        public void ReadProfile(string filePath)
         {
-            throw new NotImplementedException();
+            string[] followers = new string[0];
+            int followerIndex = 0;
+            string[] following = new string[0]; 
+            int followingIndex = 0;
+            XmlReader xmlReader = XmlReader.Create(filePath);
+
+            while (xmlReader.Read())
+            {
+                if(xmlReader.IsStartElement())
+                {
+                    switch (xmlReader.Name.ToString())
+                    {
+                        case "Name":
+                            name = xmlReader.ReadElementContentAsString();
+                            break;
+                        case "UserName":
+                            userName = xmlReader.ReadElementContentAsString();
+                            break;
+                        case "Followers":
+                            Followers = xmlReader.ReadElementContentAsInt();
+                            followers = new string[Followers]; // This will always happen before the followers are read in so we change the size here.
+                            break;
+                        case "FollowingCount":
+                            Following = xmlReader.ReadElementContentAsInt();
+                            following = new string[Following]; // Same thing happening here as well.
+                            break;
+                        case "Follower":
+                            followers[followerIndex] = xmlReader.ReadElementContentAsString();
+                            followerIndex++;
+                            break;
+                        case "Following":
+                            following[followingIndex] = xmlReader.ReadElementContentAsString();
+                            followingIndex++;
+                            break;
+                    }
+                }
+            }
+            xmlReader.Close();
         }
 
         /// <summary>
@@ -204,10 +255,6 @@ namespace Unfollowed
                     // Next line is gaurnteed to be a username.
                     userNames[index] = lines[i + 1];
                     index++;
-                }
-                else
-                {
-                    
                 }
             }
 
