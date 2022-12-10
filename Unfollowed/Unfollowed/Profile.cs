@@ -26,8 +26,8 @@ namespace Unfollowed
         private const string ProfilePath = "C:\\Users\\travi\\source\\repos\\InstaFollowedMe\\InstaFollowedMe\\Profiles\\";
         private string name;
         private string userName;
-        private int followers;
-        private int following;
+        private int followersCount;
+        private int followingCount;
         private DateTime lastUpdate;
         /// <summary>
         /// Full name of the profile. Could be the same as other profiles.
@@ -54,15 +54,19 @@ namespace Unfollowed
             private set { lastUpdate = value; }
         }
         
-        public int Followers {
-            get { return followers; }
-            private set { followers = value; }
+        public int FollowersCount {
+            get { return followersCount; }
+            private set { followersCount = value; }
         }
 
-        public int Following {
-            get { return following; }
-            private set { following = value; }
+        public int FollowingCount {
+            get { return followingCount; }
+            private set { followingCount = value; }
         }
+
+        public int newFollowersCount { get; private set; }
+        public int newFollowingCount { get; private set; }
+
 
         // Hold the last know list of followers and following.
         private string[] _currFollowers;
@@ -86,7 +90,7 @@ namespace Unfollowed
         }
 
         /// <summary>
-        /// 
+        /// Build new profile from provided lists
         /// </summary>
         /// <param name="name"></param>
         /// <param name="userName"></param>
@@ -101,7 +105,7 @@ namespace Unfollowed
         }
 
         /// <summary>
-        /// 
+        /// Build new profile from provided files.
         /// </summary>
         /// <param name="name"></param>
         /// <param name="userName"></param>
@@ -143,11 +147,11 @@ namespace Unfollowed
 
             // Followers count
             xmlWriter.WriteStartElement("Followers");
-            xmlWriter.WriteValue(Followers);
+            xmlWriter.WriteValue(newFollowersCount == 0 ? followersCount : newFollowersCount); // save new followers if and only if profile has been updated. 
             xmlWriter.WriteEndElement();
             // Following count
             xmlWriter.WriteStartElement("FollowingCount");
-            xmlWriter.WriteValue(Following);
+            xmlWriter.WriteValue(newFollowingCount == 0 ? followingCount : newFollowingCount); // same thing here for following.
             xmlWriter.WriteEndElement();
 
             // Followers
@@ -205,12 +209,12 @@ namespace Unfollowed
                             userName = xmlReader.ReadElementContentAsString();
                             break;
                         case "Followers":
-                            Followers = xmlReader.ReadElementContentAsInt();
-                            followers = new string[Followers]; // This will always happen before the followers are read in so we change the size here.
+                            FollowersCount = xmlReader.ReadElementContentAsInt();
+                            followers = new string[FollowersCount]; // This will always happen before the followers are read in so we change the size here.
                             break;
                         case "FollowingCount":
-                            Following = xmlReader.ReadElementContentAsInt();
-                            following = new string[Following]; // Same thing happening here as well.
+                            FollowingCount = xmlReader.ReadElementContentAsInt();
+                            following = new string[FollowingCount]; // Same thing happening here as well.
                             break;
                         case "Follower":
                             followers[followerIndex] = xmlReader.ReadElementContentAsString();
@@ -260,9 +264,19 @@ namespace Unfollowed
 
             // Assign followers or following count since array length is not true representation of count.
             if (filePath.Contains("Followers"))
-                Followers = index;
+            {
+                if (FollowersCount == 0)
+                    FollowersCount = index;
+                else
+                    newFollowersCount = index;
+            }
             else
-                Following = index;
+            {
+                if (FollowingCount == 0)
+                    FollowingCount = index;
+                else
+                    FollowingCount = index;
+            }
             return userNames;
         }
 
