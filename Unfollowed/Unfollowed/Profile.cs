@@ -12,6 +12,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
+using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
+using System.Xml;
 
 namespace Unfollowed
 {
@@ -56,13 +59,13 @@ namespace Unfollowed
         }
 
         // Hold the last know list of followers and following.
-        private string[] CurrFollowers;
-        private string[] CurrFollowing;
+        private string[] _currFollowers;
+        private string[] _currFollowing;
 
         // Hold the new followers and following. Could be same list
         // as old if no changes to profile.
-        private string[] NewFollowers;
-        private string[] NewFollowing;
+        private string[] _newFollowers;
+        private string[] _newFollowing;
 
         /// <summary>
         /// 
@@ -86,18 +89,28 @@ namespace Unfollowed
         {
             this.Name = name;
             this.UserName = userName;
-            CurrFollowers = followers;
-            CurrFollowing = following;
+            _currFollowers = followers;
+            _currFollowing = following;
+            this.Followers = _currFollowers.Length;
+            this.Following = _currFollowing.Length;
         }
 
-        
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="userName"></param>
+        /// <param name="followersPath"></param>
+        /// <param name="followingPath"></param>
         public Profile(string name, string userName, string followersPath, string followingPath)
         {
             this.Name = name;
             this.UserName = userName;
-            
-            // NEED TO DO: 
-            // Read followers and following from the file paths provided.
+
+            this._currFollowers = ReadFile(followersPath);
+            this._currFollowing = ReadFile(followingPath);
+            this.Followers = _currFollowers.Length;
+            this.Following = _currFollowing.Length;
         }
 
         /// <summary>
@@ -106,11 +119,40 @@ namespace Unfollowed
         /// 
         /// If the method fails to save, it will return false. (Maybe it should throw error) TBD
         /// </summary>
-        /// <returns>True if saved, false otherwise</returns>
-        /// <exception cref="NotImplementedException"></exception>
-        public bool SaveProfile()
+        /// <returns></returns
+        public void SaveProfile()
         {
-            throw new NotImplementedException();
+            XmlWriter xmlWriter = XmlWriter.Create(UserName + ".xml");
+
+            xmlWriter.WriteStartDocument();
+            xmlWriter.WriteStartElement("Profile");
+
+            // Write name
+            xmlWriter.WriteStartElement("Name");
+            xmlWriter.WriteValue(Name);
+            xmlWriter.WriteEndAttribute();
+
+            // Write username
+            xmlWriter.WriteStartElement("UserName");
+            xmlWriter.WriteValue(UserName);
+            xmlWriter.WriteEndAttribute();
+
+            // Write followers
+            foreach(string follower in _newFollowers)
+            {
+                xmlWriter.WriteStartElement("Follower");
+                xmlWriter.WriteValue(follower);
+                xmlWriter.WriteEndAttribute();
+            }
+
+            // Write following
+            foreach (string following in _newFollowing)
+            {
+                xmlWriter.WriteStartElement("Following");
+                xmlWriter.WriteValue(following);
+                xmlWriter.WriteEndAttribute();
+            }
+            xmlWriter.WriteEndDocument();
         }
 
         /// <summary>
@@ -127,6 +169,40 @@ namespace Unfollowed
         }
 
         /// <summary>
+        /// Parses a text file for usernames and returns that list.
+        /// 
+        /// Each "user" will take up at most 3 lines and at least 2 lines.
+        /// Line 1 is the text name of the profile picture.
+        /// Line 2 contains the userName.
+        /// Line 3 contains the name. But it is not always present. 
+        /// </summary>
+        /// <param name="filePath">full path to .txt file</param>
+        private string[] ReadFile(string filePath)
+        {
+            Regex reg = new Regex(@"^.*.(txt)$");
+            if (!reg.IsMatch(filePath))
+                throw new FileNotFoundException("File is not a .txt file");
+
+            string[] lines = System.IO.File.ReadAllLines(filePath);
+
+            // Size will be at most n/2 where n is the number of lines in the file.
+            string[] userNames = new string[lines.Length / 2];
+
+            int index = 0;
+
+            for(int i = 0; i < lines.Length; i++)
+            {
+                if (lines[i].Contains("profile picture"))
+                {
+                    // Next line is gaurnteed to be a username.
+                    userNames[index] = lines[i + 1];
+                    index++;
+                }
+            }
+            return userNames;
+        }
+
+        /// <summary>
         /// Compare the current list of following to the new list of following
         /// and return the usernames that are no longer in the new list.
         /// This will be the users that this profile has unfollwed.
@@ -138,7 +214,7 @@ namespace Unfollowed
         /// </returns>
         public string[] GetUnfollowed()
         {
-            return CompareLists(CurrFollowing, NewFollowing);
+            return CompareLists(_currFollowing, _newFollowing);
         }
 
         /// <summary>
@@ -156,7 +232,7 @@ namespace Unfollowed
         /// </returns>
         public string[] GetUnfollowedBy()
         {
-            return CompareLists(CurrFollowers, NewFollowers);
+            return CompareLists(_currFollowers, _newFollowers);
         }
 
         /// <summary>
@@ -166,7 +242,7 @@ namespace Unfollowed
         /// <returns>List of usernames not following back</returns>
         public string[] GetNotFollowingBack()
         {
-            return CompareLists(CurrFollowers, CurrFollowing);
+            return CompareLists(_currFollowers, _currFollowing);
         }
 
         /// <summary>
@@ -175,7 +251,7 @@ namespace Unfollowed
         /// <returns>List of usernames not following this profile.</returns>
         public string[] GetNotFollowedBack()
         {
-            return CompareLists(CurrFollowing, CurrFollowers);
+            return CompareLists(_currFollowing, _currFollowers);
         }
 
         /// <summary>
@@ -186,7 +262,7 @@ namespace Unfollowed
         /// <returns>List of usernames that are new followers</returns>
         public string[] GetNewFollowers()
         {
-            return CompareLists(NewFollowers, CurrFollowers);
+            return CompareLists(_newFollowers, _currFollowers);
         }
 
         /// <summary>
@@ -198,20 +274,20 @@ namespace Unfollowed
         /// <exception cref="NotImplementedException"></exception>
         public string[] GetNewFollowing()
         {
-            return CompareLists(NewFollowers, CurrFollowers);
+            return CompareLists(_newFollowers, _currFollowers);
         }
 
         /// <summary>
         /// Provides new lists of followers and followings to update this profile with. 
         /// 
         /// </summary>
-        /// <param name="followersPath">new followers</param>
-        /// <param name="followingPath">new following</param>
-        /// <returns>true if succesful update</returns>
-        /// <exception cref="NotImplementedException"></exception>
-        public bool Update(string followersPath, string followingPath)
+        /// <param name="followersPath">new followers full path</param>
+        /// <param name="followingPath">new following full path</param>
+        /// <returns></returns>
+        public void Update(string followersPath, string followingPath)
         {
-            throw new NotImplementedException();
+            this._currFollowers = ReadFile(followersPath);
+            this._currFollowing = ReadFile(followingPath);
         }
 
         /// <summary>
