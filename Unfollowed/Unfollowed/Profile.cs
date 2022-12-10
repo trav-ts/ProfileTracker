@@ -23,20 +23,25 @@ namespace Unfollowed
     /// </summary>
     public class Profile
     {
+        private string name;
+        private string userName;
+        private int followers;
+        private int following;
+        private DateTime lastUpdate;
         /// <summary>
         /// Full name of the profile. Could be the same as other profiles.
         /// </summary>
         public string Name { 
-            get { return Name; } 
-            private set { Name = value; } 
+            get { return name; } 
+            private set { name = value; } 
         }
 
         /// <summary>
         /// Username for the profile. Must be a unique identifier. 
         /// </summary>
         public string UserName {
-            get { return UserName; }
-            private set { UserName = value; }
+            get { return userName; }
+            private set { userName = value; }
         }
 
         /// <summary>
@@ -44,18 +49,18 @@ namespace Unfollowed
         /// Regardless of whether or not changes were detected.
         /// </summary>
         public DateTime LastUpdate{
-            get { return LastUpdate; }
-            private set { LastUpdate = value; }
+            get { return lastUpdate; }
+            private set { lastUpdate = value; }
         }
         
         public int Followers {
-            get { return Followers; }
-            private set { Followers = value; }
+            get { return followers; }
+            private set { followers = value; }
         }
 
         public int Following {
-            get { return Following; }
-            private set { Following = value; }
+            get { return following; }
+            private set { following = value; }
         }
 
         // Hold the last know list of followers and following.
@@ -91,8 +96,6 @@ namespace Unfollowed
             this.UserName = userName;
             _currFollowers = followers;
             _currFollowing = following;
-            this.Followers = _currFollowers.Length;
-            this.Following = _currFollowing.Length;
         }
 
         /// <summary>
@@ -109,8 +112,6 @@ namespace Unfollowed
 
             this._currFollowers = ReadFile(followersPath);
             this._currFollowing = ReadFile(followingPath);
-            this.Followers = _currFollowers.Length;
-            this.Following = _currFollowing.Length;
         }
 
         /// <summary>
@@ -122,37 +123,43 @@ namespace Unfollowed
         /// <returns></returns
         public void SaveProfile()
         {
-            XmlWriter xmlWriter = XmlWriter.Create(UserName + ".xml");
-
+            XmlWriterSettings settings = new XmlWriterSettings { Indent = true };
+            XmlWriter xmlWriter = XmlWriter.Create("C:\\Users\\travi\\source\\repos\\InstaFollowedMe\\InstaFollowedMe\\Profiles\\" + UserName + ".xml", settings);
             xmlWriter.WriteStartDocument();
             xmlWriter.WriteStartElement("Profile");
 
             // Write name
             xmlWriter.WriteStartElement("Name");
             xmlWriter.WriteValue(Name);
-            xmlWriter.WriteEndAttribute();
+            xmlWriter.WriteEndElement();
 
             // Write username
             xmlWriter.WriteStartElement("UserName");
             xmlWriter.WriteValue(UserName);
-            xmlWriter.WriteEndAttribute();
+            xmlWriter.WriteEndElement();
 
             // Write followers
-            foreach(string follower in _newFollowers)
+            foreach(string follower in _newFollowers ?? _currFollowers)
             {
+                if (follower == null)
+                    break;
                 xmlWriter.WriteStartElement("Follower");
                 xmlWriter.WriteValue(follower);
-                xmlWriter.WriteEndAttribute();
+                xmlWriter.WriteEndElement();
             }
 
             // Write following
-            foreach (string following in _newFollowing)
+            foreach (string following in _newFollowing ?? _currFollowing)
             {
+                if (following == null)
+                    break;
                 xmlWriter.WriteStartElement("Following");
                 xmlWriter.WriteValue(following);
-                xmlWriter.WriteEndAttribute();
+                xmlWriter.WriteEndElement();
             }
+            xmlWriter.WriteEndElement();
             xmlWriter.WriteEndDocument();
+            xmlWriter.Close();
         }
 
         /// <summary>
@@ -198,7 +205,17 @@ namespace Unfollowed
                     userNames[index] = lines[i + 1];
                     index++;
                 }
+                else
+                {
+                    
+                }
             }
+
+            // Assign followers or following count since array length is not true representation of count.
+            if (filePath.Contains("Followers"))
+                Followers = index;
+            else
+                Following = index;
             return userNames;
         }
 
@@ -286,8 +303,8 @@ namespace Unfollowed
         /// <returns></returns>
         public void Update(string followersPath, string followingPath)
         {
-            this._currFollowers = ReadFile(followersPath);
-            this._currFollowing = ReadFile(followingPath);
+            this._newFollowers = ReadFile(followersPath);
+            this._newFollowing = ReadFile(followingPath);
         }
 
         /// <summary>

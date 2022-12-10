@@ -1,0 +1,29 @@
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
+using Unfollowed;
+
+namespace UnfollowedTests
+{
+    [TestClass]
+    public class ProfileTests
+    {
+        [TestMethod]
+        public void TestLoadingFiles()
+        {
+            Profile testProfile = new Profile(
+                "trav",
+                "travv.ts",
+                "C:\\Users\\travi\\source\\repos\\InstaFollowedMe\\InstaFollowedMe\\SourceFiles\\Followers.txt",
+                "C:\\Users\\travi\\source\\repos\\InstaFollowedMe\\InstaFollowedMe\\SourceFiles\\Following.txt");
+
+            testProfile.Update("C:\\Users\\travi\\source\\repos\\InstaFollowedMe\\InstaFollowedMe\\Profiles\\NewFollowers.txt",
+                "C:\\Users\\travi\\source\\repos\\InstaFollowedMe\\InstaFollowedMe\\Profiles\\NewFollowing.txt");
+            string[] whoDoesntFollowBack = testProfile.GetNotFollowedBack();
+            string[] whoUnfollowedMe = testProfile.GetUnfollowedBy();
+            string[] WhoIdontFollow = testProfile.GetNotFollowingBack();
+            string[] NewFollowers = testProfile.GetNewFollowers();
+            string[] NewFollowing = testProfile.GetNewFollowing();
+            Assert.IsTrue(true);
+        }
+    }
+}
