@@ -33,9 +33,12 @@ namespace UnfollowedTests
         public void TestReadProfile()
         {
             Profile testprofile = new Profile("travv.ts");
+            testprofile.Update("C:\\Users\\travi\\source\\repos\\InstaFollowedMe\\InstaFollowedMe\\Profiles\\NewFollowers.txt",
+            "C:\\Users\\travi\\source\\repos\\InstaFollowedMe\\InstaFollowedMe\\Profiles\\NewFollowing.txt");
             string[] NewFollowers = testprofile.GetNewFollowers();
             string[] NewFollowing = testprofile.GetNewFollowing();
             string[] WhoIdontFollow = testprofile.GetNotFollowingBack();
+            string[] WhoUnfollowedMe = testprofile.GetUnfollowedBy();
             testprofile.SaveProfile();
             Assert.IsTrue(true);
         }

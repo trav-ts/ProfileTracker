@@ -289,7 +289,7 @@ namespace Unfollowed
                 if (FollowingCount == 0)
                     FollowingCount = index;
                 else
-                    FollowingCount = index;
+                    newFollowingCount = index;
             }
             return userNames;
         }
