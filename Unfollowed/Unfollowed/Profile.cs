@@ -178,6 +178,17 @@ namespace Unfollowed
             xmlWriter.WriteEndElement();
             xmlWriter.WriteEndDocument();
             xmlWriter.Close();
+
+            // Save the new followers list and following list as the current.
+            // If new lists are null, do nothing.
+            _currFollowers = _newFollowers ?? _currFollowers;
+            _currFollowing = _newFollowing ?? _currFollowing;
+
+            if(newFollowersCount != 0)
+            {
+                FollowersCount = newFollowersCount;
+                FollowingCount = newFollowingCount;
+            }
         }
 
         /// <summary>
@@ -228,6 +239,9 @@ namespace Unfollowed
                 }
             }
             xmlReader.Close();
+
+            _currFollowers = followers;
+            _currFollowing = following;
         }
 
         /// <summary>

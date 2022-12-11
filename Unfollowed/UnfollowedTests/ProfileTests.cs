@@ -33,6 +33,10 @@ namespace UnfollowedTests
         public void TestReadProfile()
         {
             Profile testprofile = new Profile("travv.ts");
+            string[] NewFollowers = testprofile.GetNewFollowers();
+            string[] NewFollowing = testprofile.GetNewFollowing();
+            string[] WhoIdontFollow = testprofile.GetNotFollowingBack();
+            testprofile.SaveProfile();
             Assert.IsTrue(true);
         }
     }
