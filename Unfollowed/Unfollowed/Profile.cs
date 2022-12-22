@@ -295,6 +295,40 @@ namespace Unfollowed
         }
 
         /// <summary>
+        /// Parses a text file for usernames and returns that list.
+        /// 
+        /// Each "user" will take up at most 3 lines and at least 2 lines.
+        /// Line 1 is the text name of the profile picture.
+        /// Line 2 contains the userName.
+        /// Line 3 contains the name. But it is not always present. 
+        /// </summary>
+        /// <param name="filePath">full path to .txt file</param>
+        private string[] ReadFileWithOutCount(string filePath)
+        {
+            Regex reg = new Regex(@"^.*.(txt)$");
+            if (!reg.IsMatch(filePath))
+                throw new FileNotFoundException("File is not a .txt file");
+
+            string[] lines = System.IO.File.ReadAllLines(filePath);
+
+            // Size will be at most n/2 where n is the number of lines in the file.
+            string[] userNames = new string[lines.Length / 2];
+
+            int index = 0;
+
+            for (int i = 0; i < lines.Length; i++)
+            {
+                if (lines[i].Contains("profile picture"))
+                {
+                    // Next line is gaurnteed to be a username.
+                    userNames[index] = lines[i + 1];
+                    index++;
+                }
+            }
+            return userNames;
+        }
+
+        /// <summary>
         /// Compare the current list of following to the new list of following
         /// and return the usernames that are no longer in the new list.
         /// This will be the users that this profile has unfollwed.
@@ -307,6 +341,20 @@ namespace Unfollowed
         public string[] GetUnfollowed()
         {
             return CompareLists(_currFollowing, _newFollowing);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="compareWith"></param>
+        /// <returns></returns>
+        public string[] GetCommonFollowers(string compareWithPath)
+        {
+            string[] newList = ReadFileWithOutCount(compareWithPath);
+            if (_newFollowers == null)
+                return _currFollowers.Intersect(newList).ToArray();
+            else
+                return _newFollowers.Intersect(newList).ToArray();
         }
 
         /// <summary>

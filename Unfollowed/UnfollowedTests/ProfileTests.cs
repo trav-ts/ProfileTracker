@@ -39,7 +39,9 @@ namespace UnfollowedTests
             string[] NewFollowing = testprofile.GetNewFollowing();
             string[] WhoIdontFollow = testprofile.GetNotFollowingBack();
             string[] WhoUnfollowedMe = testprofile.GetUnfollowedBy();
+            string[] WhoIUnfollowed = testprofile.GetUnfollowed();
             string[] whoDoesntFollowMe = testprofile.GetNotFollowedBack();
+            string[] commonFollowers = testprofile.GetCommonFollowers("C:\\Users\\travi\\source\\repos\\InstaFollowedMe\\InstaFollowedMe\\Profiles\\AFollowers.txt");
             testprofile.SaveProfile();
             Assert.IsTrue(true);
         }
